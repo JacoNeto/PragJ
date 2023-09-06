@@ -1,14 +1,25 @@
+import 'dart:io';
+
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:pragj/models/vision_description.dart';
+import 'package:pragj/services/external/vision_connect.dart';
+import 'package:pragj/services/firebase/storage.dart';
+import 'package:pragj/utils/json_utils.dart';
 
 class HomeController extends GetxController {
   final ImagePicker picker = ImagePicker();
   final FlutterTts flutterTts = FlutterTts();
 
   // ignore: unnecessary_cast
-  Rx<XFile?> imageFile = (null as XFile?).obs;
+  Rx<XFile?> imageXFile = (null as XFile?).obs;
+  // ignore: unnecessary_cast
+  Rx<File?> imageFile = (null as File?).obs;
+
+  // generated text
   Rx<String> text = "".obs;
+  // audio reproducing ui
   var isReproducing = false.obs;
 
   @override
@@ -16,7 +27,7 @@ class HomeController extends GetxController {
     flutterTts.awaitSpeakCompletion(false);
     flutterTts.setQueueMode(1);
     flutterTts.setLanguage("pt");
-    flutterTts.setSpeechRate(1);
+    flutterTts.setSpeechRate(0.7);
     flutterTts.setVoice({"name": "Karen", "locale": "pt-BR"});
     flutterTts.setCompletionHandler(() {
       isReproducing.value = false;
@@ -25,15 +36,22 @@ class HomeController extends GetxController {
   }
 
   bool hasImageFile() {
-    return imageFile.value != null;
+    return imageXFile.value != null;
   }
 
   Future<void> pickImageFromGallery() async {
-    imageFile.value = await picker.pickImage(source: ImageSource.gallery);
+    imageXFile.value = await picker.pickImage(source: ImageSource.gallery);
+    imageFile.value = File(imageXFile.value!.path);
   }
 
   Future<void> pickImageFromCamera() async {
-    imageFile.value = await picker.pickImage(source: ImageSource.camera);
+    imageXFile.value = await picker.pickImage(source: ImageSource.camera);
+    imageFile.value = File(imageXFile.value!.path);
+  }
+
+  void clearImage() {
+    imageXFile.value = null;
+    imageFile.value = null;
   }
 
   void speak(String text) async {
@@ -44,5 +62,76 @@ class HomeController extends GetxController {
   void stop() async {
     isReproducing.value = false;
     await flutterTts.stop();
+  }
+
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  /// [Image upload]
+  String? imageLink = "";
+  var isUploadLoading = false.obs;
+
+  Future<void> uploadImage() async {
+    isUploadLoading.value = true;
+    print("ALOOOOOOOOOOOOOOOO ${imageFile.value}");
+
+    if (imageFile.value != null) {
+      imageLink = await StorageClient()
+          .uploadImageToFirebase(imageFile: imageFile.value!);
+    }
+
+    await getVisionDescriptionFromImage();
+    text.value = getLongDescription();
+
+    isUploadLoading.value = false;
+  }
+
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  ///
+  /// [Vision Description]
+
+  final VisionConnect _visionConnect = Get.put(VisionConnect());
+  VisionDescription? visionDescription;
+
+  Future<void> getVisionDescriptionFromImage() async {
+    var response = await _visionConnect.describe(imageLink ?? "");
+    visionDescription = VisionDescription.fromJson(getMap(response));
+  }
+
+  /// should be called after [getVisionDescriptionFromImage]
+  String getShortDescription() {
+    if (visionDescription != null) {
+      if (visionDescription!.caption != null) {
+        return visionDescription!.caption!.text ?? "";
+      }
+    }
+    return "Algo deu errado";
+  }
+
+  /// should be called after [getVisionDescriptionFromImage]
+  String getLongDescription() {
+    if (visionDescription != null) {
+      if (visionDescription!.captionGPTS != null) {
+        return visionDescription!.captionGPTS ?? "";
+      }
+    }
+    return "Algo deu errado";
   }
 }

@@ -29,14 +29,21 @@ class MyHomePage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Obx(() => _homeController.hasImageFile()
-                      ? SizedBox(
-                          height: 500,
-                          width: 500,
-                          child: kIsWeb
-                              ? Image.network(
-                                  _homeController.imageFile.value!.path)
-                              : Image.file(
-                                  File(_homeController.imageFile.value!.path)))
+                      ? Stack(
+                          children: [
+                            SizedBox(
+                                height: 500,
+                                width: 500,
+                                child: kIsWeb
+                                    ? Image.network(
+                                        _homeController.imageXFile.value!.path)
+                                    : Image.file(File(_homeController
+                                        .imageFile.value!.path))),
+                            CloseButton(
+                              onPressed: () => _homeController.clearImage(),
+                            )
+                          ],
+                        )
                       : const SizedBox(
                           height: 400,
                           width: double.infinity,
@@ -82,9 +89,12 @@ class MyHomePage extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     child: _homeController.hasImageFile()
                         ? MyButton(
-                            leading: const Icon(Icons.generating_tokens),
+                            leading: _homeController.isUploadLoading.value
+                                ? const CircularProgressIndicator()
+                                : const Icon(Icons.generating_tokens),
                             label: "Gerar texto",
-                            onPressed: () {
+                            onPressed: () async {
+                              await _homeController.uploadImage();
                               Get.to(ResultPage());
                             },
                           )

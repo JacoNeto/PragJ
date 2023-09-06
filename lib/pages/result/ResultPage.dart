@@ -25,7 +25,7 @@ class ResultPage extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                Text(text),
+                Text(homeController.text.value),
                 const SizedBox(
                   height: 12,
                 ),
@@ -38,7 +38,7 @@ class ResultPage extends StatelessWidget {
                           : "Reproduzir",
                       onPressed: () => homeController.isReproducing.value
                           ? homeController.stop()
-                          : homeController.speak(text),
+                          : homeController.speak(homeController.text.value),
                     ))
               ],
             ),
