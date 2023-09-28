@@ -34,7 +34,7 @@ class VisionConnect extends GetConnect {
       '/describe',
       <String, dynamic>{
         "tkn":
-            "D995840B-12C2-4F05-BED6-7CD6E81E9D3505D3D2C9-E72E-4A1D-87C1-8B83D7DFA02A",
+            "AA37390A-AEAC-424F-B5F9-50609B83A76A2B718330-09D9-4E24-A863-E8E8533D6BD2",
         "modelVersion": "2.1_full",
         "input": image,
         "visionParams": "gpt, describe, describe_all, tags, objects",

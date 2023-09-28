@@ -7,10 +7,12 @@ import 'package:pragj/models/vision_description.dart';
 import 'package:pragj/services/external/vision_connect.dart';
 import 'package:pragj/services/firebase/storage.dart';
 import 'package:pragj/utils/json_utils.dart';
+import 'package:translator/translator.dart';
 
 class HomeController extends GetxController {
   final ImagePicker picker = ImagePicker();
   final FlutterTts flutterTts = FlutterTts();
+  final GoogleTranslator translator = GoogleTranslator();
 
   // ignore: unnecessary_cast
   Rx<XFile?> imageXFile = (null as XFile?).obs;
@@ -89,7 +91,7 @@ class HomeController extends GetxController {
     }
 
     await getVisionDescriptionFromImage();
-    text.value = getLongDescription();
+    text.value = await getLongDescription();
 
     isUploadLoading.value = false;
   }
@@ -126,10 +128,12 @@ class HomeController extends GetxController {
   }
 
   /// should be called after [getVisionDescriptionFromImage]
-  String getLongDescription() {
+  Future<String> getLongDescription() async {
     if (visionDescription != null) {
       if (visionDescription!.captionGPTS != null) {
-        return visionDescription!.captionGPTS ?? "";
+        var result = await translator.translate(visionDescription!.captionGPTS!,
+            from: 'en', to: 'pt');
+        return result.text;
       }
     }
     return "Algo deu errado";
