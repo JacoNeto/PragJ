@@ -19,8 +19,10 @@ class HomeController extends GetxController {
   // ignore: unnecessary_cast
   Rx<File?> imageFile = (null as File?).obs;
 
-  // generated text
-  Rx<String> text = "".obs;
+  // generated shortText
+  Rx<String> shortText = "".obs;
+  // generated longText
+  Rx<String> longText = "".obs;
   // audio reproducing ui
   var isReproducing = false.obs;
 
@@ -56,9 +58,9 @@ class HomeController extends GetxController {
     imageFile.value = null;
   }
 
-  void speak(String text) async {
+  void speak(String shortText) async {
     isReproducing.value = true;
-    await flutterTts.speak(text);
+    await flutterTts.speak(shortText);
   }
 
   void stop() async {
@@ -91,7 +93,8 @@ class HomeController extends GetxController {
     }
 
     await getVisionDescriptionFromImage();
-    text.value = await getLongDescription();
+    longText.value = await getLongDescription();
+    shortText.value = await getShortDescription();
 
     isUploadLoading.value = false;
   }
@@ -118,10 +121,12 @@ class HomeController extends GetxController {
   }
 
   /// should be called after [getVisionDescriptionFromImage]
-  String getShortDescription() {
+  Future<String> getShortDescription() async {
     if (visionDescription != null) {
       if (visionDescription!.caption != null) {
-        return visionDescription!.caption!.text ?? "";
+        var result = await translator
+            .translate(visionDescription!.caption!.text!, from: 'en', to: 'pt');
+        return result.text;
       }
     }
     return "Algo deu errado";
