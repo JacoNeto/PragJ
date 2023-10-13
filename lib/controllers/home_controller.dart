@@ -87,14 +87,20 @@ class HomeController extends GetxController {
     isUploadLoading.value = true;
     print("ALOOOOOOOOOOOOOOOO ${imageFile.value}");
 
+    speak("Carregando imagem. Aguarde.");
+
     if (imageFile.value != null) {
       imageLink = await StorageClient()
           .uploadImageToFirebase(imageFile: imageFile.value!);
     }
 
+    speak("O texto está sendo gerado. Aguarde.");
+
     await getVisionDescriptionFromImage();
     longText.value = await getLongDescription();
     shortText.value = await getShortDescription();
+
+    speak("O texto foi gerado com sucesso!");
 
     isUploadLoading.value = false;
   }

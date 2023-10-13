@@ -32,7 +32,7 @@ class MyHomePage extends StatelessWidget {
                       ? GestureDetector(
                           onLongPress: () {
                             _homeController.speak(
-                                "Há uma umagem selecionada. Toque no botão mais em baixo para gerar a descrição.");
+                                "Há uma imagem selecionada. Toque no botão mais em baixo para gerar a descrição.");
                           },
                           child: Stack(
                             children: [
